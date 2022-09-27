@@ -6,4 +6,6 @@ abstract class ServiceRepository {
   Future<void> saveCEPList(List<City> cities);
 
   Future<List<City>?> getCEPList();
+
+  Future<void> deleteCEPList();
 }

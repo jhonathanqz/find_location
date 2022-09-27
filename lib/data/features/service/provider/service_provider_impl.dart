@@ -96,4 +96,11 @@ class ServiceProviderImpl implements ServiceProvider {
       await dbController.put('cep_key', [jsonEncode(_save.toJson())]);
     } catch (_) {}
   }
+
+  @override
+  Future<void> deleteCEPList() async {
+    try {
+      await dbController.delete('cep_key');
+    } catch (_) {}
+  }
 }

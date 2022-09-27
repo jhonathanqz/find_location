@@ -8,10 +8,15 @@ import 'package:find_location/app/injection_container.dart';
 import 'package:find_location/app/navigation_service.dart';
 import 'package:find_location/app/routes.dart';
 import 'package:find_location/presentation/features/city/mobx/city.controller.dart';
+import 'package:find_location/presentation/shared/global/alert/alert_info.dart';
 import 'package:find_location/presentation/shared/global/scaffold/scaffold_primary.dart';
 import 'package:find_location/presentation/shared/global/textfield/simple_textfield.dart';
+import 'package:find_location/presentation/shared/helpers/dialog_helper.dart';
+import 'package:find_location/presentation/shared/style/app_colors.dart';
 import 'package:find_location/presentation/shared/style/app_edge_insets.dart';
 import 'package:find_location/presentation/shared/style/app_spacing.dart';
+import 'package:find_location/presentation/shared/style/app_text_styles.dart';
+import 'package:find_location/utils/info_exception.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({Key? key}) : super(key: key);
@@ -22,6 +27,7 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   late CityController _controller;
+  late ReactionDisposer _reactionErrorHistory;
   final _searchController = TextEditingController();
   late ReactionDisposer _reactionGetCeps;
 
@@ -33,6 +39,17 @@ class _HistoryPageState extends State<HistoryPage> {
       (_) async {
         await _controller.getCepList();
         setState(() {});
+      },
+    );
+
+    _reactionErrorHistory = reaction(
+      (_) => _controller.isError,
+      (_) {
+        if (_controller.isError) {
+          _controller.isError = false;
+          InfoException.showInfoException(
+              context: context, message: _controller.errorMessage);
+        }
       },
     );
     super.initState();
@@ -48,6 +65,7 @@ class _HistoryPageState extends State<HistoryPage> {
   void dispose() {
     _reactionGetCeps.call();
     _searchController.dispose();
+    _reactionErrorHistory.call();
     super.dispose();
   }
 
@@ -62,6 +80,14 @@ class _HistoryPageState extends State<HistoryPage> {
       builder: (context) {
         return ScaffoldPrimary(
           title: 'Histórico',
+          isAction: true,
+          widgetAction: IconButton(
+            onPressed: () => _delete(),
+            icon: const Icon(
+              Icons.delete,
+              color: AppColors.white,
+            ),
+          ),
           child: Padding(
             padding: AppEdgeInsets.sdAll,
             child: Column(
@@ -122,26 +148,36 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   _buildCepList() => Expanded(
-        child: ListView.builder(
-          itemCount: _controller.cepList.length,
-          itemBuilder: (context, index) {
-            final _cep = _controller.cepList[index];
-            final isName = _controller.isFilterName;
-            final _place =
-                _cep.publicPlace != '' ? _cep.publicPlace : 'Sem dados';
-            final _zipCode = _cep.zipcode;
-            return InkWell(
-              onTap: () {
-                _controller.setCep(_cep.zipcode);
-                coolNavigate.pushReplacementNamed(Routes.search);
-              },
-              child: ListTile(
-                title: Text(isName ? _place : _zipCode),
-                subtitle: Text(isName ? 'Endereço / CEP: $_zipCode' : 'CEP'),
+        child: _controller.cepList.isNotEmpty
+            ? ListView.builder(
+                itemCount: _controller.cepList.length,
+                itemBuilder: (context, index) {
+                  final _cep = _controller.cepList[index];
+                  final isName = _controller.isFilterName;
+                  final _place =
+                      _cep.publicPlace != '' ? _cep.publicPlace : 'Sem dados';
+                  final _zipCode = _cep.zipcode;
+                  return InkWell(
+                    onTap: () {
+                      _controller.setCep(_cep.zipcode);
+                      coolNavigate.pushReplacementNamed(Routes.search);
+                    },
+                    child: ListTile(
+                      title: Text(isName ? _place : _zipCode),
+                      subtitle:
+                          Text(isName ? 'Endereço / CEP: $_zipCode' : 'CEP'),
+                    ),
+                  );
+                },
+              )
+            : const SizedBox(
+                child: Center(
+                  child: Text(
+                    'Nenhum histórico encontrado',
+                    style: AppTextStyles.title,
+                  ),
+                ),
               ),
-            );
-          },
-        ),
       );
 
   _buildCepsFilter() => Expanded(
@@ -166,4 +202,20 @@ class _HistoryPageState extends State<HistoryPage> {
           },
         ),
       );
+
+  void _delete() {
+    DialogHelper.open(
+      context: context,
+      content: AlertInfo(
+        title: 'Atenção!',
+        message: 'Confirma exclusão de todo seu histórico de consultas?',
+        textButton: 'Sim',
+        backText: 'Não',
+        function: () async {
+          coolNavigate.goBack();
+          await _controller.deleteCEPList();
+        },
+      ),
+    );
+  }
 }

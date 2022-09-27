@@ -35,4 +35,13 @@ class ServiceRepositoryImpl implements ServiceRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<void> deleteCEPList() async {
+    try {
+      return await serviceProvider.deleteCEPList();
+    } catch (_) {
+      rethrow;
+    }
+  }
 }

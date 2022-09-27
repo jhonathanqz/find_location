@@ -173,6 +173,14 @@ mixin _$CityController on CityBase, Store {
     return _$getCepListAsyncAction.run(() => super.getCepList());
   }
 
+  late final _$deleteCEPListAsyncAction =
+      AsyncAction('CityBase.deleteCEPList', context: context);
+
+  @override
+  Future<void> deleteCEPList() {
+    return _$deleteCEPListAsyncAction.run(() => super.deleteCEPList());
+  }
+
   late final _$CityBaseActionController =
       ActionController(name: 'CityBase', context: context);
 
@@ -204,6 +212,17 @@ mixin _$CityController on CityBase, Store {
         _$CityBaseActionController.startAction(name: 'CityBase.wipe');
     try {
       return super.wipe();
+    } finally {
+      _$CityBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void wipeError() {
+    final _$actionInfo =
+        _$CityBaseActionController.startAction(name: 'CityBase.wipeError');
+    try {
+      return super.wipeError();
     } finally {
       _$CityBaseActionController.endAction(_$actionInfo);
     }

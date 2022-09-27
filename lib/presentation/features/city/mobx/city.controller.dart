@@ -1,6 +1,7 @@
 import 'package:mobx/mobx.dart';
 
 import 'package:find_location/domain/entities/city.dart';
+import 'package:find_location/domain/use_cases/features/service/delete_cep_list_use_case.dart';
 import 'package:find_location/domain/use_cases/features/service/get_cep_list_use_case.dart';
 import 'package:find_location/domain/use_cases/features/service/save_cep_list_use_case.dart';
 import 'package:find_location/domain/use_cases/features/service/search_cep_use_case.dart';
@@ -13,11 +14,13 @@ abstract class CityBase with Store {
   final SearchCEPUseCase searchCEPUseCase;
   final SaveCEPListUseCase saveCEPListUseCase;
   final GetCEPListUseCase getCEPListUseCase;
+  final DeleteCEPListUseCase deleteCEPListUseCase;
 
   CityBase({
     required this.searchCEPUseCase,
     required this.saveCEPListUseCase,
     required this.getCEPListUseCase,
+    required this.deleteCEPListUseCase,
   });
 
   @observable
@@ -88,6 +91,7 @@ abstract class CityBase with Store {
   @action
   Future<void> getCepList() async {
     try {
+      wipeError();
       isLoading = true;
 
       final _response = await getCEPListUseCase.call();
@@ -96,7 +100,10 @@ abstract class CityBase with Store {
         cepList = _response;
       }
       isLoading = false;
-    } catch (_) {}
+    } catch (_) {
+      isError = true;
+      errorMessage = 'Erro ao tentar obter histórico de consultas';
+    }
     isLoading = false;
   }
 
@@ -125,6 +132,21 @@ abstract class CityBase with Store {
   bool isFilterName = false;
 
   @action
+  Future<void> deleteCEPList() async {
+    try {
+      wipeError();
+      isLoading = true;
+      await deleteCEPListUseCase.call();
+      wipe();
+      isLoading = false;
+    } catch (_) {
+      isError = true;
+      errorMessage = 'Erro ao tentar excluir histórico de consultas';
+    }
+    isLoading = false;
+  }
+
+  @action
   void wipe() {
     isLoading = false;
     isError = false;
@@ -134,5 +156,11 @@ abstract class CityBase with Store {
     cepsFilter = [];
     filter = '';
     city = null;
+  }
+
+  @action
+  void wipeError() {
+    isError = false;
+    errorMessage = '';
   }
 }
