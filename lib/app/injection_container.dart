@@ -9,6 +9,8 @@ import 'package:find_location/domain/use_cases/features/localstorage/add_storage
 import 'package:find_location/domain/use_cases/features/localstorage/delete_storage_use_case.dart';
 import 'package:find_location/domain/use_cases/features/localstorage/get_storage_use_case.dart';
 import 'package:find_location/domain/use_cases/features/localstorage/put_storage_use_case.dart';
+import 'package:find_location/domain/use_cases/features/service/get_cep_list_use_case.dart';
+import 'package:find_location/domain/use_cases/features/service/save_cep_list_use_case.dart';
 import 'package:find_location/domain/use_cases/features/service/search_cep_use_case.dart';
 import 'package:find_location/infrastructure/features/localstorage/repositories/contracts/database_provider.dart';
 import 'package:find_location/infrastructure/features/localstorage/repositories/database_repository_impl.dart';
@@ -76,6 +78,20 @@ void setupUseCase() {
     dispose: (_) => sl.resetLazySingleton<SearchCEPUseCase>(),
   );
 
+  sl.registerLazySingleton<GetCEPListUseCase>(
+    () => GetCEPListUseCase(
+      serviceRepository: sl<ServiceRepository>(),
+    ),
+    dispose: (_) => sl.resetLazySingleton<GetCEPListUseCase>(),
+  );
+
+  sl.registerLazySingleton<SaveCEPListUseCase>(
+    () => SaveCEPListUseCase(
+      serviceRepository: sl<ServiceRepository>(),
+    ),
+    dispose: (_) => sl.resetLazySingleton<SaveCEPListUseCase>(),
+  );
+
   sl.registerLazySingleton<AddStorageUseCase>(
     () => AddStorageUseCase(
       dataBaseRepository: sl<DataBaseRepository>(),
@@ -129,6 +145,8 @@ setupMobx() {
   sl.registerLazySingleton<CityController>(
     () => CityController(
       searchCEPUseCase: sl<SearchCEPUseCase>(),
+      saveCEPListUseCase: sl<SaveCEPListUseCase>(),
+      getCEPListUseCase: sl<GetCEPListUseCase>(),
     ),
     dispose: (_) => sl.resetLazySingleton<CityController>(),
   );

@@ -1,13 +1,9 @@
-import 'dart:convert';
-
 import 'package:mobx/mobx.dart';
 
-import 'package:find_location/app/injection_container.dart';
-import 'package:find_location/data/features/service/model/city_model_response.dart';
-import 'package:find_location/data/features/service/model/save_city_model.dart';
 import 'package:find_location/domain/entities/city.dart';
+import 'package:find_location/domain/use_cases/features/service/get_cep_list_use_case.dart';
+import 'package:find_location/domain/use_cases/features/service/save_cep_list_use_case.dart';
 import 'package:find_location/domain/use_cases/features/service/search_cep_use_case.dart';
-import 'package:find_location/presentation/features/localstorage/mobx/db.controller.dart';
 
 part 'city.controller.g.dart';
 
@@ -15,9 +11,13 @@ class CityController = CityBase with _$CityController;
 
 abstract class CityBase with Store {
   final SearchCEPUseCase searchCEPUseCase;
+  final SaveCEPListUseCase saveCEPListUseCase;
+  final GetCEPListUseCase getCEPListUseCase;
 
   CityBase({
     required this.searchCEPUseCase,
+    required this.saveCEPListUseCase,
+    required this.getCEPListUseCase,
   });
 
   @observable
@@ -79,27 +79,8 @@ abstract class CityBase with Store {
       if (!cepList.contains(cep)) {
         cepList.add(cep);
       }
-      List<CityModelResponse> _citiesModel = [];
-      for (var e in cepList) {
-        final _model = CityModelResponse(
-          cep: e.zipcode,
-          logradouro: e.publicPlace,
-          complemento: e.complement,
-          bairro: e.district,
-          localidade: e.city,
-          uf: e.uf,
-          ibge: e.ibge,
-          ddd: e.ddd,
-        );
-
-        _citiesModel.add(_model);
-      }
-
-      final _save = SaveCityModel(
-        citiesList: _citiesModel,
-      );
-
-      await sl<DbController>().put('cep_key', [jsonEncode(_save.toJson())]);
+      await saveCEPListUseCase.call(cepList);
+      isLoading = false;
     } catch (_) {}
     isLoading = false;
   }
@@ -109,31 +90,12 @@ abstract class CityBase with Store {
     try {
       isLoading = true;
 
-      final _response = await sl<DbController>().get('cep_key');
+      final _response = await getCEPListUseCase.call();
 
-      if (_response.isNotEmpty) {
-        final _citiesModel =
-            SaveCityModel.fromJson(jsonDecode(_response.first));
-
-        final _buildList = _citiesModel.citiesList
-            .map(
-              (e) => City(
-                zipcode: e.cep ?? '',
-                publicPlace: e.logradouro ?? '',
-                complement: e.complemento ?? '',
-                district: e.bairro ?? '',
-                city: e.localidade ?? '',
-                uf: e.uf ?? '',
-                ibge: e.ibge ?? '',
-                ddd: e.ddd ?? '',
-              ),
-            )
-            .toList();
-
-        cepList = _buildList;
-        isLoading = false;
-        return;
+      if (_response != null) {
+        cepList = _response;
       }
+      isLoading = false;
     } catch (_) {}
     isLoading = false;
   }

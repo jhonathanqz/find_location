@@ -105,6 +105,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     value: _controller.isFilterName,
                     onChanged: (e) {
                       _controller.isFilterName = e;
+                      FocusScope.of(context).requestFocus(FocusNode());
                     },
                   ),
                 ),
