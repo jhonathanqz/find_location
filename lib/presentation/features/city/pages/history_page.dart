@@ -32,6 +32,7 @@ class _HistoryPageState extends State<HistoryPage> {
     _reactionGetCeps = autorun(
       (_) async {
         await _controller.getCepList();
+        setState(() {});
       },
     );
     super.initState();
@@ -65,23 +66,47 @@ class _HistoryPageState extends State<HistoryPage> {
             padding: AppEdgeInsets.sdAll,
             child: Column(
               children: [
-                SimpleTextField(
-                  textEditingController: _searchController,
-                  onChanged: _controller.setFilter,
-                  labelText: 'CEP',
-                  hintText: 'Pesquisar CEP',
-                  textInputType: TextInputType.number,
-                  onSubmitted: (e) {
-                    if (e == '') return;
-                    _controller.setFilter(e);
-                  },
-                  inputFormatters: [
-                    TextInputMask(
-                      mask: [
-                        '99999-999',
-                      ],
-                    ),
-                  ],
+                _controller.isFilterName
+                    ? SimpleTextField(
+                        textEditingController: _searchController,
+                        onChanged: _controller.setFilter,
+                        labelText: 'Endereço',
+                        hintText: 'Pesquisar Endereço',
+                        textInputType: TextInputType.text,
+                        onSubmitted: (e) {
+                          if (e == '') return;
+                          _controller.setFilter(e);
+                          setState(() {});
+                        },
+                      )
+                    : SimpleTextField(
+                        textEditingController: _searchController,
+                        onChanged: _controller.setFilter,
+                        labelText: 'CEP',
+                        hintText: 'Pesquisar CEP',
+                        textInputType: TextInputType.number,
+                        onSubmitted: (e) {
+                          if (e == '') return;
+                          _controller.setFilter(e);
+                          setState(() {});
+                        },
+                        inputFormatters: [
+                          TextInputMask(
+                            mask: [
+                              '99999-999',
+                            ],
+                          ),
+                        ],
+                      ),
+                AppSpacing.xl,
+                ListTile(
+                  title: const Text('Filtrar por endereço?'),
+                  trailing: Switch(
+                    value: _controller.isFilterName,
+                    onChanged: (e) {
+                      _controller.isFilterName = e;
+                    },
+                  ),
                 ),
                 AppSpacing.xl,
                 _controller.cepsFilter.isNotEmpty && _controller.filter != ''
@@ -100,14 +125,18 @@ class _HistoryPageState extends State<HistoryPage> {
           itemCount: _controller.cepList.length,
           itemBuilder: (context, index) {
             final _cep = _controller.cepList[index];
+            final isName = _controller.isFilterName;
+            final _place =
+                _cep.publicPlace != '' ? _cep.publicPlace : 'Sem dados';
+            final _zipCode = _cep.zipcode;
             return InkWell(
               onTap: () {
-                _controller.setCep(_cep);
+                _controller.setCep(_cep.zipcode);
                 coolNavigate.pushReplacementNamed(Routes.search);
               },
               child: ListTile(
-                title: Text(_cep),
-                subtitle: const Text('CEP'),
+                title: Text(isName ? _place : _zipCode),
+                subtitle: Text(isName ? 'Endereço / CEP: $_zipCode' : 'CEP'),
               ),
             );
           },
@@ -119,14 +148,18 @@ class _HistoryPageState extends State<HistoryPage> {
           itemCount: _controller.cepsFilter.length,
           itemBuilder: (context, index) {
             final _cep = _controller.cepsFilter[index];
+            final isName = _controller.isFilterName;
+            final _place =
+                _cep.publicPlace != '' ? _cep.publicPlace : 'Sem dados';
+            final _zipCode = _cep.zipcode;
             return InkWell(
               onTap: () {
-                _controller.setCep(_cep);
+                _controller.setCep(_cep.zipcode);
                 coolNavigate.pushReplacementNamed(Routes.search);
               },
               child: ListTile(
-                title: Text(_cep),
-                subtitle: const Text('CEP'),
+                title: Text(isName ? _place : _zipCode),
+                subtitle: Text(isName ? 'Endereço / CEP: $_zipCode' : 'CEP'),
               ),
             );
           },

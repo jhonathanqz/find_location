@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:mobx/mobx.dart';
 
 import 'package:find_location/app/injection_container.dart';
+import 'package:find_location/data/features/service/model/city_model_response.dart';
+import 'package:find_location/data/features/service/model/save_city_model.dart';
 import 'package:find_location/domain/entities/city.dart';
 import 'package:find_location/domain/use_cases/features/service/search_cep_use_case.dart';
 import 'package:find_location/presentation/features/localstorage/mobx/db.controller.dart';
@@ -35,7 +39,7 @@ abstract class CityBase with Store {
   void setCep(String value) => cepController = value;
 
   @observable
-  List<String> cepList = [];
+  List<City> cepList = [];
 
   @action
   Future<void> searchCEP() async {
@@ -58,7 +62,7 @@ abstract class CityBase with Store {
         isLoading = false;
         return;
       }
-      await saveCEP(cepController);
+      await saveCEP(_result);
       city = _result;
     } catch (e) {
       isError = true;
@@ -68,13 +72,34 @@ abstract class CityBase with Store {
   }
 
   @action
-  Future<void> saveCEP(String cep) async {
+  Future<void> saveCEP(City cep) async {
     try {
       isLoading = true;
+      await getCepList();
       if (!cepList.contains(cep)) {
         cepList.add(cep);
       }
-      sl<DbController>().put('cep_key', cepList);
+      List<CityModelResponse> _citiesModel = [];
+      for (var e in cepList) {
+        final _model = CityModelResponse(
+          cep: e.zipcode,
+          logradouro: e.publicPlace,
+          complemento: e.complement,
+          bairro: e.district,
+          localidade: e.city,
+          uf: e.uf,
+          ibge: e.ibge,
+          ddd: e.ddd,
+        );
+
+        _citiesModel.add(_model);
+      }
+
+      final _save = SaveCityModel(
+        citiesList: _citiesModel,
+      );
+
+      await sl<DbController>().put('cep_key', [jsonEncode(_save.toJson())]);
     } catch (_) {}
     isLoading = false;
   }
@@ -84,13 +109,37 @@ abstract class CityBase with Store {
     try {
       isLoading = true;
 
-      cepList = await sl<DbController>().get('cep_key');
+      final _response = await sl<DbController>().get('cep_key');
+
+      if (_response.isNotEmpty) {
+        final _citiesModel =
+            SaveCityModel.fromJson(jsonDecode(_response.first));
+
+        final _buildList = _citiesModel.citiesList
+            .map(
+              (e) => City(
+                zipcode: e.cep ?? '',
+                publicPlace: e.logradouro ?? '',
+                complement: e.complemento ?? '',
+                district: e.bairro ?? '',
+                city: e.localidade ?? '',
+                uf: e.uf ?? '',
+                ibge: e.ibge ?? '',
+                ddd: e.ddd ?? '',
+              ),
+            )
+            .toList();
+
+        cepList = _buildList;
+        isLoading = false;
+        return;
+      }
     } catch (_) {}
     isLoading = false;
   }
 
   @observable
-  List<String> cepsFilter = [];
+  List<City> cepsFilter = [];
 
   @observable
   String filter = '';
@@ -98,10 +147,20 @@ abstract class CityBase with Store {
   @action
   void setFilter(String value) {
     filter = value;
-    cepsFilter = cepList
-        .where((e) => e.toLowerCase().contains(value.toLowerCase()))
-        .toList();
+    if (isFilterName) {
+      cepsFilter = cepList
+          .where(
+              (e) => e.publicPlace.toLowerCase().contains(value.toLowerCase()))
+          .toList();
+    } else {
+      cepsFilter = cepList
+          .where((e) => e.zipcode.contains(value.toLowerCase()))
+          .toList();
+    }
   }
+
+  @observable
+  bool isFilterName = false;
 
   @action
   void wipe() {
