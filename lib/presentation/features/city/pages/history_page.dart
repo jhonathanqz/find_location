@@ -211,6 +211,7 @@ class _HistoryPageState extends State<HistoryPage> {
         message: 'Confirma exclusão de todo seu histórico de consultas?',
         textButton: 'Sim',
         backText: 'Não',
+        isDualButton: true,
         function: () async {
           coolNavigate.goBack();
           await _controller.deleteCEPList();
