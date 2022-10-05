@@ -90,13 +90,13 @@ mixin _$CityController on CityBase, Store {
   late final _$cepListAtom = Atom(name: 'CityBase.cepList', context: context);
 
   @override
-  List<String> get cepList {
+  List<City> get cepList {
     _$cepListAtom.reportRead();
     return super.cepList;
   }
 
   @override
-  set cepList(List<String> value) {
+  set cepList(List<City> value) {
     _$cepListAtom.reportWrite(value, super.cepList, () {
       super.cepList = value;
     });
@@ -106,13 +106,13 @@ mixin _$CityController on CityBase, Store {
       Atom(name: 'CityBase.cepsFilter', context: context);
 
   @override
-  List<String> get cepsFilter {
+  List<City> get cepsFilter {
     _$cepsFilterAtom.reportRead();
     return super.cepsFilter;
   }
 
   @override
-  set cepsFilter(List<String> value) {
+  set cepsFilter(List<City> value) {
     _$cepsFilterAtom.reportWrite(value, super.cepsFilter, () {
       super.cepsFilter = value;
     });
@@ -133,6 +133,22 @@ mixin _$CityController on CityBase, Store {
     });
   }
 
+  late final _$isFilterNameAtom =
+      Atom(name: 'CityBase.isFilterName', context: context);
+
+  @override
+  bool get isFilterName {
+    _$isFilterNameAtom.reportRead();
+    return super.isFilterName;
+  }
+
+  @override
+  set isFilterName(bool value) {
+    _$isFilterNameAtom.reportWrite(value, super.isFilterName, () {
+      super.isFilterName = value;
+    });
+  }
+
   late final _$searchCEPAsyncAction =
       AsyncAction('CityBase.searchCEP', context: context);
 
@@ -145,7 +161,7 @@ mixin _$CityController on CityBase, Store {
       AsyncAction('CityBase.saveCEP', context: context);
 
   @override
-  Future<void> saveCEP(String cep) {
+  Future<void> saveCEP(City cep) {
     return _$saveCEPAsyncAction.run(() => super.saveCEP(cep));
   }
 
@@ -155,6 +171,14 @@ mixin _$CityController on CityBase, Store {
   @override
   Future<void> getCepList() {
     return _$getCepListAsyncAction.run(() => super.getCepList());
+  }
+
+  late final _$deleteCEPListAsyncAction =
+      AsyncAction('CityBase.deleteCEPList', context: context);
+
+  @override
+  Future<void> deleteCEPList() {
+    return _$deleteCEPListAsyncAction.run(() => super.deleteCEPList());
   }
 
   late final _$CityBaseActionController =
@@ -194,6 +218,17 @@ mixin _$CityController on CityBase, Store {
   }
 
   @override
+  void wipeError() {
+    final _$actionInfo =
+        _$CityBaseActionController.startAction(name: 'CityBase.wipeError');
+    try {
+      return super.wipeError();
+    } finally {
+      _$CityBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   String toString() {
     return '''
 isLoading: ${isLoading},
@@ -203,7 +238,8 @@ city: ${city},
 cepController: ${cepController},
 cepList: ${cepList},
 cepsFilter: ${cepsFilter},
-filter: ${filter}
+filter: ${filter},
+isFilterName: ${isFilterName}
     ''';
   }
 }

@@ -18,7 +18,6 @@ class AlertInfo extends StatelessWidget {
   final String backText;
   final String title;
   final bool isDualButton;
-  final String image;
   const AlertInfo({
     Key? key,
     required this.title,
@@ -27,7 +26,6 @@ class AlertInfo extends StatelessWidget {
     this.textButton = 'Finalizar',
     this.backText = 'Voltar',
     this.isDualButton = false,
-    required this.image,
     this.onReturn,
   }) : super(key: key);
   @override
@@ -42,11 +40,10 @@ class AlertInfo extends StatelessWidget {
         width: Layout.getSize(context).width / 2,
         child: Column(
           children: [
-            Center(
-              child: SizedBox(
-                height: AppSize.size56,
-                width: AppSize.size56,
-                child: Image.asset(image),
+            const Center(
+              child: Icon(
+                Icons.info,
+                size: 40,
               ),
             ),
             AppSpacing.sm,

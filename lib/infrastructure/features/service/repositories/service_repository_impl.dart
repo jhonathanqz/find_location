@@ -17,4 +17,31 @@ class ServiceRepositoryImpl implements ServiceRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<List<City>?> getCEPList() async {
+    try {
+      return await serviceProvider.getCEPList();
+    } catch (_) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> saveCEPList(List<City> cities) async {
+    try {
+      return await serviceProvider.saveCEPList(cities);
+    } catch (_) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteCEPList() async {
+    try {
+      return await serviceProvider.deleteCEPList();
+    } catch (_) {
+      rethrow;
+    }
+  }
 }
