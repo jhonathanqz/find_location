@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:find_location/app/routes.dart';
-import 'package:find_location/presentation/features/about/pages/about_page.dart';
-import 'package:find_location/presentation/features/city/pages/history_page.dart';
-import 'package:find_location/presentation/features/city/pages/search_page.dart';
-import 'package:find_location/presentation/features/home/pages/home_page.dart';
-import 'package:find_location/presentation/features/splash/pages/splash_page.dart';
+import 'package:find_location/src/view/cidade/pages/history_page.dart';
+import 'package:find_location/src/view/cidade/pages/search_page.dart';
+import 'package:find_location/src/view/home/pages/home_page.dart';
+import 'package:find_location/src/view/splash/pages/splash_page.dart';
 
 class AppModule {
   static String get initialRoute => Routes.splash;
@@ -16,7 +15,6 @@ class AppModule {
     Routes.search: (_) => SearchPage(
         isReset: ModalRoute.of(_)?.settings.arguments.toString() ?? ''),
     Routes.history: (_) => const HistoryPage(),
-    Routes.about: (_) => const AboutPage(),
   };
 
   static ThemeData get theme => ThemeData(
